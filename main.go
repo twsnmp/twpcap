@@ -1,13 +1,16 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"log"
 	"os"
+	"os/signal"
 	"runtime"
 	"runtime/pprof"
 	"strings"
+	"syscall"
 	"time"
 
 	"github.com/google/gopacket/pcap"
@@ -78,6 +81,21 @@ func main() {
 	if iface == "" {
 		log.Fatalln("no monitor interface")
 	}
+	if syslogDst == "" {
+		log.Fatalln("no syslog distenation")
+	}
+	log.Printf("version=%s", fmt.Sprintf("%s(%s)", version, commit))
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, os.Interrupt, syscall.SIGTERM)
+	ctx, cancel := context.WithCancel(context.Background())
+	go startSyslog(ctx)
+	go startPcap(ctx)
+	<-quit
+	syslogCh <- "quit by signal"
+	time.Sleep(time.Second * 1)
+	log.Println("quit by signal")
+	cancel()
+	time.Sleep(time.Second * 2)
 }
 
 func listIface() {
