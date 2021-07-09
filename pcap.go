@@ -32,7 +32,8 @@ func (e *IPToMACEnt) String() string {
 }
 
 var (
-	IPToMAC sync.Map
+	IPToMAC   sync.Map
+	EtherType sync.Map
 )
 
 func startPcap(ctx context.Context) {
@@ -49,7 +50,7 @@ func startPcap(ctx context.Context) {
 		case packet := <-packetSource.Packets():
 			checkPacket(packet)
 		case <-timer.C:
-			sendReport()
+			go sendReport()
 		case <-ctx.Done():
 			log.Println("stop pcap")
 			return
@@ -58,9 +59,6 @@ func startPcap(ctx context.Context) {
 }
 
 func checkPacket(packet gopacket.Packet) {
-	// for _, layer := range packet.Layers() {
-	// 	fmt.Println("- ", layer.LayerType())
-	// }
 	ethernetLayer := packet.Layer(layers.LayerTypeEthernet)
 	if ethernetLayer == nil {
 		return
@@ -69,6 +67,7 @@ func checkPacket(packet gopacket.Packet) {
 	if !ok {
 		return
 	}
+	updateEtherType(uint16(eth.EthernetType))
 	arpLayer := packet.Layer(layers.LayerTypeARP)
 	if arpLayer != nil {
 		arp, ok := arpLayer.(*layers.ARP)
@@ -94,21 +93,30 @@ func checkPacket(packet gopacket.Packet) {
 	if ipv6Layer != nil {
 		ipv6, ok := ipv6Layer.(*layers.IPv6)
 		if !ok {
-			log.Println(packet)
 			return
 		}
 		icmpv6NALayer := packet.Layer(layers.LayerTypeICMPv6NeighborAdvertisement)
-		if icmpv6NALayer != nil {
+		icmpv6RALayer := packet.Layer(layers.LayerTypeICMPv6RouterAdvertisement)
+		if icmpv6NALayer != nil || icmpv6RALayer != nil {
 			updateIPToMAC(ipv6.SrcIP.String(), eth.SrcMAC.String())
 			return
 		}
-		icmpv6RALayer := packet.Layer(layers.LayerTypeICMPv6RouterAdvertisement)
-		if icmpv6RALayer != nil {
-			updateIPToMAC(ipv6.SrcIP.String(), eth.SrcMAC.String())
-		}
 	}
+
+	log.Println(packet)
 }
 
+// EtherType別の集計
+func updateEtherType(t uint16) {
+	c := 0
+	if e, ok := EtherType.Load(t); ok {
+		c = e.(int)
+	}
+	c++
+	EtherType.Store(t, c)
+}
+
+// syslogでレポートを送信する
 func sendReport() {
 	now := time.Now().Unix()
 	st := time.Now().Add(-time.Second * time.Duration(syslogInterval)).Unix()
@@ -120,13 +128,24 @@ func sendReport() {
 				return true
 			}
 			if e.SendTime < st {
-				log.Println(e.String())
-				syslogCh <- e.String()
+				syslogCh <- "type=IPToMAC," + e.String()
 				e.SendTime = now
 			}
 		}
 		return true
 	})
+	s := "type=EtherType"
+	EtherType.Range(func(key, value interface{}) bool {
+		if t, ok := key.(uint16); ok {
+			if c, ok := value.(int); ok {
+				s += fmt.Sprintf(",0x%04x=%d", t, c)
+			}
+		}
+		//レポートしたらクリアする
+		EtherType.Delete(key)
+		return true
+	})
+	syslogCh <- s
 }
 
 func updateIPToMAC(ip, mac string) {
@@ -148,5 +167,4 @@ func updateIPToMAC(ip, mac string) {
 		FirstTime: now,
 		LastTime:  now,
 	})
-	log.Println(ip, mac)
 }

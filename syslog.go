@@ -33,7 +33,7 @@ func startSyslog(ctx context.Context) {
 	for {
 		select {
 		case <-ctx.Done():
-			log.Println("stop pcap")
+			log.Println("stop syslog")
 			return
 		case msg := <-syslogCh:
 			for _, d := range dst {
