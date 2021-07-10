@@ -13,5 +13,5 @@ make
 make install
 cd /twpcap
 go mod tidy
-CC=arm-linux-gnueabihf-gcc GOOS=linux GOARCH=arm GOARM=7 CGO_ENABLED=1 go build -o $1/twpcap.arm  -ldflags='-extldflags "-static -s" -w -X main.version=$2 -X main.commit=$3'
+CC=arm-linux-gnueabihf-gcc GOOS=linux GOARCH=arm GOARM=7 CGO_ENABLED=1 go build -o $1/twpcap.arm  -ldflags="-extldflags \"-static -s\" -w -X main.version=$2 -X main.commit=$3"
 

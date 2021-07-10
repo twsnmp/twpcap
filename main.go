@@ -74,6 +74,7 @@ func main() {
 			log.Fatalf("could not write memory profile:%v", err)
 		}
 	}
+	log.Printf("version=%s", fmt.Sprintf("%s(%s)", version, commit))
 	if list {
 		listIface()
 		return
@@ -84,7 +85,6 @@ func main() {
 	if syslogDst == "" {
 		log.Fatalln("no syslog distenation")
 	}
-	log.Printf("version=%s", fmt.Sprintf("%s(%s)", version, commit))
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, os.Interrupt, syscall.SIGTERM)
 	ctx, cancel := context.WithCancel(context.Background())
