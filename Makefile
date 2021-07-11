@@ -13,7 +13,7 @@ ZIP          = zip
 
 ### ターゲットパラメータ
 DIST = dist
-SRC = ./main.go
+SRC = ./main.go ./pcap.go ./syslog.go
 TARGETS     = $(DIST)/twpcap.exe $(DIST)/twpcap.app $(DIST)/twpcap $(DIST)/twpcap.arm
 GO_PKGROOT  = ./...
 
@@ -30,7 +30,7 @@ zip: $(TARGETS)
 	cd dist && $(ZIP) twpcap_linux_amd64.zip twpcap
 	cd dist && $(ZIP) twpcap_linux_arm.zip twpcap.arm
 
-docker:  dist/twpcap Docker/Dockerfile
+docker:  $(DIST)/twpcap Docker/Dockerfile
 	cp dist/twpcap Docker/
 	cd Docker && docker build -t twsnmp/twpcap .
 

@@ -21,7 +21,7 @@ var commit = ""
 var syslogDst = ""
 var iface = ""
 var list = false
-var syslogInterval = 300
+var syslogInterval = 600
 var retentionData = 3600
 var cpuprofile string
 var memprofile string
@@ -29,7 +29,7 @@ var memprofile string
 func init() {
 	flag.StringVar(&syslogDst, "syslog", "", "syslog destnation list")
 	flag.StringVar(&iface, "iface", "", "monitor interface")
-	flag.IntVar(&syslogInterval, "interval", 300, "syslog send interval(sec)")
+	flag.IntVar(&syslogInterval, "interval", 600, "syslog send interval(sec)")
 	flag.IntVar(&retentionData, "retention", 3600, "data retention time(sec)")
 	flag.BoolVar(&list, "list", false, "list interface")
 	flag.StringVar(&cpuprofile, "cpuprofile", "", "write cpu profile to `file`")
