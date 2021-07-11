@@ -121,6 +121,14 @@ func checkPacket(packet gopacket.Packet) {
 			}
 			updateDHCP(dhcp, src)
 		}
+		radiusLayer := packet.Layer(layers.LayerTypeRADIUS)
+		if radiusLayer != nil {
+			radius, ok := radiusLayer.(*layers.RADIUS)
+			if !ok {
+				return
+			}
+			updateRADIUS(radius, src, dst)
+		}
 	} else {
 		// TCP
 		tcpLayer := packet.Layer(layers.LayerTypeTCP)
