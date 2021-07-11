@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"net"
 	"sync"
 	"time"
 
@@ -46,6 +47,7 @@ func updateDHCP(dhcp *layers.DHCPv4, src string) {
 	switch mt {
 	case layers.DHCPMsgTypeAck:
 		ack = 1
+		updateIPToMAC(dhcp.YourClientIP.String(), net.HardwareAddr(dhcp.ClientHWAddr).String(), 1)
 	case layers.DHCPMsgTypeNak:
 		nack = 1
 	case layers.DHCPMsgTypeOffer:

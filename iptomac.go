@@ -11,14 +11,15 @@ type IPToMACEnt struct {
 	MAC       string
 	Count     int64
 	Change    int64
+	DHCP      int64
 	FirstTime int64
 	LastTime  int64
 	SendTime  int64
 }
 
 func (e *IPToMACEnt) String() string {
-	return fmt.Sprintf("type=IPToMAC,ip=%s,mac=%s,count=%d,change=%d,ft=%s,lt=%s",
-		e.IP, e.MAC, e.Count, e.Change,
+	return fmt.Sprintf("type=IPToMAC,ip=%s,mac=%s,count=%d,change=%d,dchp=%d,ft=%s,lt=%s",
+		e.IP, e.MAC, e.Count, e.Change, e.DHCP,
 		time.Unix(e.FirstTime, 0).Format(time.RFC3339),
 		time.Unix(e.LastTime, 0).Format(time.RFC3339),
 	)
@@ -26,12 +27,13 @@ func (e *IPToMACEnt) String() string {
 
 var IPToMAC sync.Map
 
-func updateIPToMAC(ip, mac string) {
+func updateIPToMAC(ip, mac string, dhcp int64) {
 	if v, ok := IPToMAC.Load(ip); ok {
 		if e, ok := v.(*IPToMACEnt); ok {
 			if e.MAC != mac {
 				e.Change++
 			}
+			e.DHCP += dhcp
 			e.Count++
 			e.LastTime = time.Now().Unix()
 		}
@@ -42,6 +44,7 @@ func updateIPToMAC(ip, mac string) {
 		IP:        ip,
 		MAC:       mac,
 		Count:     1,
+		DHCP:      dhcp,
 		FirstTime: now,
 		LastTime:  now,
 	})

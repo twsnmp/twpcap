@@ -56,7 +56,7 @@ func checkPacket(packet gopacket.Packet) {
 			return
 		}
 		updateIPToMAC(net.IP(arp.SourceProtAddress).String(),
-			net.HardwareAddr(arp.SourceHwAddress).String())
+			net.HardwareAddr(arp.SourceHwAddress).String(), 0)
 		return
 	}
 	src := ""
@@ -81,7 +81,7 @@ func checkPacket(packet gopacket.Packet) {
 			icmpv6NALayer := packet.Layer(layers.LayerTypeICMPv6NeighborAdvertisement)
 			icmpv6RALayer := packet.Layer(layers.LayerTypeICMPv6RouterAdvertisement)
 			if icmpv6NALayer != nil || icmpv6RALayer != nil {
-				updateIPToMAC(src, macaddr)
+				updateIPToMAC(src, macaddr, 0)
 				return
 			}
 			if packet.Layer(layers.LayerTypeICMPv6) != nil {
