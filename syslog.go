@@ -4,8 +4,10 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"log/syslog"
+	"net"
+	"os"
 	"strings"
+	"time"
 )
 
 var syslogCh chan string
@@ -13,17 +15,21 @@ var syslogCh chan string
 func startSyslog(ctx context.Context) {
 	syslogCh = make(chan string, 2000)
 	dstList := strings.Split(syslogDst, ",")
-	dst := []*syslog.Writer{}
+	dst := []net.Conn{}
 	for _, d := range dstList {
 		if !strings.Contains(d, ":") {
 			d += ":514"
 		}
-		s, err := syslog.Dial("udp", d, syslog.LOG_INFO|syslog.LOG_LOCAL5, "twpcap")
+		s, err := net.Dial("udp", d)
 		if err != nil {
 			log.Fatal(err)
 		}
 		syslogCh <- fmt.Sprintf("start send syslog to %s", d)
 		dst = append(dst, s)
+	}
+	host, err := os.Hostname()
+	if err != nil {
+		host = "localhost"
 	}
 	defer func() {
 		for _, d := range dst {
@@ -36,8 +42,9 @@ func startSyslog(ctx context.Context) {
 			log.Println("stop syslog")
 			return
 		case msg := <-syslogCh:
+			s := fmt.Sprintf("<%d>%s %s twpcap: %s", 21*8+6, time.Now().Format("2006-01-02T15:04:05-07:00"), host, msg)
 			for _, d := range dst {
-				d.Info(msg)
+				d.Write([]byte(s))
 			}
 		}
 	}
