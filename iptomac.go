@@ -18,7 +18,7 @@ type IPToMACEnt struct {
 }
 
 func (e *IPToMACEnt) String() string {
-	return fmt.Sprintf("type=IPToMAC,ip=%s,mac=%s,count=%d,change=%d,dchp=%d,ft=%s,lt=%s",
+	return fmt.Sprintf("type=IPToMAC,ip=%s,mac=%s,count=%d,change=%d,dhcp=%d,ft=%s,lt=%s",
 		e.IP, e.MAC, e.Count, e.Change, e.DHCP,
 		time.Unix(e.FirstTime, 0).Format(time.RFC3339),
 		time.Unix(e.LastTime, 0).Format(time.RFC3339),
