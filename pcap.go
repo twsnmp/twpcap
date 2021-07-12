@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net"
 	"time"
@@ -21,11 +22,16 @@ func startPcap(ctx context.Context) {
 	timer := time.NewTicker(time.Second * 60)
 	defer timer.Stop()
 	packetSource := gopacket.NewPacketSource(handle, handle.LinkType())
+	total := int64(0)
+	count := int64(0)
 	for {
 		select {
 		case packet := <-packetSource.Packets():
 			checkPacket(packet)
+			count++
+			total++
 		case <-timer.C:
+			syslogCh <- fmt.Sprintf("type=Stats,total=%d,count=%d,ps=%.2f", total, count, float64(count)/60.0)
 			go sendReport()
 		case <-ctx.Done():
 			log.Println("stop pcap")
@@ -133,7 +139,7 @@ func checkPacket(packet gopacket.Packet) {
 		// TCP
 		tcpLayer := packet.Layer(layers.LayerTypeTCP)
 		if tcpLayer != nil {
-			_, ok := tcpLayer.(*layers.TCP)
+			tcp, ok := tcpLayer.(*layers.TCP)
 			if !ok {
 				return
 			}
@@ -149,15 +155,11 @@ func checkPacket(packet gopacket.Packet) {
 					switch layerType {
 					case layers.LayerTypeTLS:
 						// TLS
-						updateTLS(&tls, src)
+						updateTLS(&tls, src, dst, int(tcp.SrcPort), int(tcp.DstPort))
 					}
 				}
 			}
 		}
-	}
-	// test
-	if eth.EthernetType == 0x8899 {
-		return
 	}
 }
 
