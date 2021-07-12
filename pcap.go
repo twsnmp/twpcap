@@ -172,4 +172,5 @@ func sendReport() {
 	sendNTPReport(now, st, rt)
 	sendDHCPReport(now, st, rt)
 	sendTLSReport(now, st, rt)
+	sendRADIUSReport(now, st, rt)
 }

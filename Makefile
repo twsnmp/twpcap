@@ -13,7 +13,7 @@ ZIP          = zip
 
 ### ターゲットパラメータ
 DIST = dist
-SRC = ./main.go ./pcap.go ./syslog.go
+SRC = ./main.go ./pcap.go ./syslog.go ./tls.go ./radius.go ./dhcp.go ./dns.go
 TARGETS     = $(DIST)/twpcap.exe $(DIST)/twpcap.app $(DIST)/twpcap $(DIST)/twpcap.arm
 GO_PKGROOT  = ./...
 
