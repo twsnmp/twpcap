@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"log"
@@ -149,6 +150,9 @@ func checkPacket(packet gopacket.Packet) {
 				parser := gopacket.NewDecodingLayerParser(layers.LayerTypeTLS, &tls)
 				err := parser.DecodeLayers(packet.ApplicationLayer().LayerContents(), &decoded)
 				if err != nil {
+					if bytes.Contains(packet.ApplicationLayer().LayerContents(), []byte{0x00, 0x2b, 0x00, 0x02, 0x03, 0x04}) {
+						setTLSv1_3(src, dst, int(tcp.SrcPort))
+					}
 					return
 				}
 				for _, layerType := range decoded {

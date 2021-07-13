@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"sync"
 	"time"
@@ -107,6 +108,11 @@ func updateTLS(tls *layers.TLS, src, dst string, sport, dport int) {
 	}
 	if len(tls.Handshake) > 0 {
 		e.Handshake++
+		if src == sv {
+			if bytes.Contains(tls.Contents, []byte{0x00, 0x2b, 0x00, 0x02, 0x03, 0x04}) {
+				e.MaxVersion = 0x0304
+			}
+		}
 	}
 }
 
@@ -125,4 +131,19 @@ func sendTLSReport(now, st, rt int64) {
 		}
 		return true
 	})
+}
+
+func setTLSv1_3(src, dst string, sport int) {
+	serv, ok := serviceMap[sport]
+	if !ok {
+		serv = "OTEHR"
+	}
+	key := dst + ":" + src + ":" + serv
+	v, ok := TLSFlow.Load(key)
+	if !ok {
+		return
+	}
+	if e, ok := v.(*TLSFlowEnt); ok {
+		e.MaxVersion = 0x0304
+	}
 }
