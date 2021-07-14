@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"crypto/tls"
 	"fmt"
 	"sync"
 	"time"
@@ -25,10 +26,14 @@ type TLSFlowEnt struct {
 }
 
 func (e *TLSFlowEnt) String() string {
-	return fmt.Sprintf("type=TLSFlow,cl=%s,sv=%s,serv=%s,count=%d,handshake=%d,alert=%d,minver=%s,maxver=%s,cipher=0x%04X,ft=%s,lt=%s",
+	cs, ok := cipherSuiteMap[e.CipherSuite]
+	if !ok {
+		cs = "Unknown"
+	}
+	return fmt.Sprintf("type=TLSFlow,cl=%s,sv=%s,serv=%s,count=%d,handshake=%d,alert=%d,minver=%s,maxver=%s,cipher=%s,ft=%s,lt=%s",
 		e.Client, e.Server, e.Service, e.Count, e.Handshake, e.Alert,
 		layers.TLSVersion(e.MinVersion).String(), layers.TLSVersion(e.MaxVersion).String(),
-		e.CipherSuite,
+		cs,
 		time.Unix(e.FirstTime, 0).Format(time.RFC3339),
 		time.Unix(e.LastTime, 0).Format(time.RFC3339),
 	)
@@ -53,7 +58,9 @@ var serviceMap = map[int]string{
 	5001: "UPnPMSv2",
 }
 
-func updateTLS(tls *layers.TLS, src, dst string, sport, dport int) {
+var cipherSuiteMap = make(map[uint16]string)
+
+func updateTLS(tlsp *layers.TLS, src, dst string, sport, dport int) {
 	sv := src
 	cl := dst
 	serv, oks := serviceMap[sport]
@@ -96,8 +103,8 @@ func updateTLS(tls *layers.TLS, src, dst string, sport, dport int) {
 		}
 		e.Count++
 	}
-	if len(tls.AppData) > 0 {
-		ver := uint16(tls.AppData[0].Version)
+	if len(tlsp.AppData) > 0 {
+		ver := uint16(tlsp.AppData[0].Version)
 		if e.MinVersion == 0 || e.MinVersion > ver {
 			e.MinVersion = ver
 		}
@@ -105,17 +112,17 @@ func updateTLS(tls *layers.TLS, src, dst string, sport, dport int) {
 			e.MaxVersion = ver
 		}
 	}
-	if len(tls.Alert) > 0 {
+	if len(tlsp.Alert) > 0 {
 		e.Alert++
 	}
-	if len(tls.Handshake) > 0 {
+	if len(tlsp.Handshake) > 0 {
 		e.Handshake++
 		if src == sv {
-			if bytes.Contains(tls.Contents, []byte{0x00, 0x2b, 0x00, 0x02, 0x03, 0x04}) {
+			if bytes.Contains(tlsp.Contents, []byte{0x00, 0x2b, 0x00, 0x02, 0x03, 0x04}) {
 				e.MaxVersion = 0x0304
 			}
 			if e.CipherSuite == 0 {
-				e.CipherSuite = getCipherSuite(tls.Contents)
+				e.CipherSuite = getCipherSuite(tlsp.Contents)
 			}
 		}
 	}
@@ -174,6 +181,12 @@ func getCipherSuite(b []byte) uint16 {
 	}
 	pos := sidlen + 5 + 4 + 2 + 32 + 1
 	return uint16(b[pos])<<8 + uint16(b[pos+1])
+}
+
+func makeCipherSuiteMap() {
+	for _, cs := range tls.CipherSuites() {
+		cipherSuiteMap[cs.ID] = cs.Name
+	}
 }
 
 /*
