@@ -8,18 +8,20 @@ TWSNMPのためのパケットキャプチャーによるネットワークセ�
 ## Overview
 
 パケットキャプチャーからTWSNMPで監視するために必要な情報をsyslogで送信するためのセンサープログラムです。
-以下の情報を取得できるようにする予定です。
+現在のバージョンでは以下の情報を取得できます。
 
+- モニタしたパケット数の統計情報
+- ネットワーク上のEthernetパケットの種類別集計
 - IPアドレスとMACアドレスの関係(ARP,IPv4,IPv6)
-- DHCPサーバーとクライアント
-- DNSサーバーとDNSクライアント
-- DNSの問い合わせ内容
-- TLSサーバーとクライアントの通信（TLSバージョンなど）
-- TLSサーバーの証明書の情報（期限、発行元など）
+- DHCPサーバーとクライアントの情報
+- DNSサーバーとクライアントの問い合わせ情報
+- NTPサーバーの情報
+- RADUISサーバーとクライアントの情報
+- サーバーとクライアントのTLS通信の情報（TLSバージョン、暗号方式）
 
 ## Status
 
-開発を始めたばかりです。
+基本的な機能が動作する最初のバージョンv1.0.0をリリースしました。(2021/7/16)
 
 ## Build
 
@@ -55,14 +57,76 @@ $make zip
 
 ## Run
 
-Mac OS,Windows,Linuxの環境では以下のコマンドで起動できます。
+### 使用方法
+
 ```
-#./twpcap <syslog送信先1> <syslog送信先2>
+Usage of ./twpcap.app:
+  -cpuprofile file
+    	write cpu profile to file
+  -iface string
+    	monitor interface
+  -interval int
+    	syslog send interval(sec) (default 600)
+  -list
+    	list interface
+  -memprofile file
+    	write memory profile to file
+  -retention int
+    	data retention time(sec) (default 3600)
+  -syslog string
+    	syslog destnation list
+```
+
+syslogの送信先はカンマ区切りで複数指定できます。:の続けてポート番号を
+指定することもできます。
+
+```
+-syslog 192.168.1.1,192.168.1.2:5514
+```
+
+### パケットキャプチャーするLAN I/Fのリスト
+
+Mac OS,Windows,Linuxの環境では以下のコマンドで表示できます。（例はLinux場合）
+
+```
+#./twpcap -list
+2021-07-16T06:21:18.442 version=v1.0.0(278ed5f)
+Interface found:
+
+Name:  en0
+Description:
+addresses:
+- IP address:  fe80::4c8:cc67:d4a6:4df0
+- Subnet mask:  ffffffffffffffff0000000000000000
+- IP address:  240d:2:6306:6700:ec:8a7b:5c14:5e3e
+- Subnet mask:  ffffffffffffffff0000000000000000
+- IP address:  240d:2:6306:6700:1089:ad12:387c:d110
+- Subnet mask:  ffffffffffffffff0000000000000000
+- IP address:  192.168.1.250
+- Subnet mask:  ffffff00
+
+```
+
+Docker環境では以下のコマンドを実行すれば表示できます。
+
+```
+#docker run --rm -d  --name twpcap  --net host twsnmp/twpcap  -list
+```
+
+### 起動方法
+
+起動するためには、モニタするLAN I/F(-iface)とsyslogの送信先(-syslog)が必要です。
+
+Mac OS,Windows,Linuxの環境では以下のコマンドで起動できます。（例はLinux場合）
+
+```
+#./twpcap -iface eth3 -syslog 192.168.1.1
 ```
 
 Docker環境では以下のコマンドを実行すれば起動できます。
+
 ```
-#docker run --rm -d  --name twpcap  --net host twsnmp/twpcap  <syslog送信先1> <syslog送信先2>
+#docker run --rm -d  --name twpcap  --net host twsnmp/twpcap  -iface eth3 -syslog 192.168.1.1
 ```
 
 ## Copyright
