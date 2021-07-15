@@ -33,6 +33,7 @@ func startPcap(ctx context.Context) {
 			total++
 		case <-timer.C:
 			syslogCh <- fmt.Sprintf("type=Stats,total=%d,count=%d,ps=%.2f", total, count, float64(count)/60.0)
+			count = 0
 			go sendReport()
 		case <-ctx.Done():
 			log.Println("stop pcap")
@@ -168,8 +169,15 @@ func checkPacket(packet gopacket.Packet) {
 	}
 }
 
+var busy = false
+
 // syslogでレポートを送信する
 func sendReport() {
+	if busy {
+		log.Printf("send report busy")
+		return
+	}
+	busy = true
 	now := time.Now().Unix()
 	st := time.Now().Add(-time.Second * time.Duration(syslogInterval)).Unix()
 	rt := time.Now().Add(-time.Second * time.Duration(retentionData)).Unix()
@@ -180,4 +188,5 @@ func sendReport() {
 	sendDHCPReport(now, st, rt)
 	sendTLSReport(now, st, rt)
 	sendRADIUSReport(now, st, rt)
+	busy = false
 }
