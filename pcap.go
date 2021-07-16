@@ -14,7 +14,6 @@ import (
 
 // startPcap : start packet capchare
 func startPcap(ctx context.Context) {
-	makeCipherSuiteMap()
 	handle, err := pcap.OpenLive(iface, int32(65540), true, time.Second*30)
 	if err != nil {
 		log.Fatal(err)
