@@ -166,7 +166,7 @@ func checkDecodeErrorTLSPacket(src, dst string, sport int, b []byte) {
 }
 
 func getCipherSuite(b []byte) uint16 {
-	if len(b) < (5+4+2+32) || b[0] != 0x16 {
+	if len(b) < (5+4+2+32+2) || b[0] != 0x16 {
 		// Not handshake
 		return 0x0000
 	}
@@ -175,11 +175,11 @@ func getCipherSuite(b []byte) uint16 {
 		return 0x0000
 	}
 	sidlen := int(b[5+4+2+32])
-	if sidlen < 0 || len(b) < sidlen+5+4+2+32 {
+	pos := sidlen + 5 + 4 + 2 + 32 + 1
+	if sidlen < 0 || pos+1 > len(b) {
 		// invalid length
 		return 0x0000
 	}
-	pos := sidlen + 5 + 4 + 2 + 32 + 1
 	return uint16(b[pos])<<8 + uint16(b[pos+1])
 }
 
