@@ -522,7 +522,7 @@ func getCipherSuite(b []byte) uint16 {
 	}
 	sidlen := int(b[5+4+2+32])
 	pos := sidlen + 5 + 4 + 2 + 32 + 1
-	if sidlen < 0 || pos+1 > len(b) {
+	if sidlen < 0 || pos+1 >= len(b) {
 		// invalid length
 		return 0x0000
 	}
