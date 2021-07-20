@@ -9,21 +9,23 @@ import (
 )
 
 type DNSEnt struct {
-	Type      string
-	Name      string
-	Count     int64
-	Change    int64
-	LastIP    string
-	LastMAC   string
-	FirstTime int64
-	LastTime  int64
-	SendTime  int64
+	Type       string
+	Name       string
+	Count      int64
+	Change     int64
+	Server     string
+	LastClient string
+	LastMAC    string
+	FirstTime  int64
+	LastTime   int64
+	SendTime   int64
 }
 
 func (e *DNSEnt) String() string {
-	return fmt.Sprintf("type=DNS,DNSType=%s,Name=%s,count=%d,change=%d,lastIP=%s,lastMAC=%s,ft=%s,lt=%s",
+	return fmt.Sprintf("type=DNS,sv=%s,DNSType=%s,Name=%s,count=%d,change=%d,lcl=%s,lMAC=%s,ft=%s,lt=%s",
+		e.Server,
 		e.Type, e.Name, e.Count, e.Change,
-		e.LastIP,
+		e.LastClient,
 		e.LastMAC,
 		time.Unix(e.FirstTime, 0).Format(time.RFC3339),
 		time.Unix(e.LastTime, 0).Format(time.RFC3339),
@@ -32,19 +34,19 @@ func (e *DNSEnt) String() string {
 
 var DNSQuery sync.Map
 
-func updateDNS(dns *layers.DNS, ip, mac string) {
+func updateDNS(dns *layers.DNS, src, dst, mac string) {
 	if dns.OpCode != layers.DNSOpCodeQuery {
 		return
 	}
 	for _, q := range dns.Questions {
-		k := q.Type.String() + "," + string(q.Name)
+		k := dst + "," + q.Type.String() + "," + string(q.Name)
 		if v, ok := DNSQuery.Load(k); ok {
 			if e, ok := v.(*DNSEnt); ok {
 				e.Count++
-				if mac != e.LastMAC || ip != e.LastIP {
+				if mac != e.LastMAC || src != e.LastClient {
 					e.Change++
 					e.LastMAC = mac
-					e.LastIP = ip
+					e.LastClient = src
 				}
 				e.LastTime = time.Now().Unix()
 			}
@@ -52,13 +54,14 @@ func updateDNS(dns *layers.DNS, ip, mac string) {
 		}
 		now := time.Now().Unix()
 		DNSQuery.Store(k, &DNSEnt{
-			Type:      q.Type.String(),
-			Name:      string(q.Name),
-			LastMAC:   mac,
-			LastIP:    ip,
-			Count:     1,
-			FirstTime: now,
-			LastTime:  now,
+			Type:       q.Type.String(),
+			Name:       string(q.Name),
+			Server:     dst,
+			LastMAC:    mac,
+			LastClient: src,
+			Count:      1,
+			FirstTime:  now,
+			LastTime:   now,
 		})
 	}
 }

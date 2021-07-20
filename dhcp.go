@@ -10,7 +10,7 @@ import (
 )
 
 type DHCPServerEnt struct {
-	IP        string
+	Server    string
 	Count     int64
 	Offer     int64
 	Ack       int64
@@ -21,8 +21,8 @@ type DHCPServerEnt struct {
 }
 
 func (e *DHCPServerEnt) String() string {
-	return fmt.Sprintf("type=DHCP,ip=%s,count=%d,offer=%d,ack=%d,nak=%d,ft=%s,lt=%s",
-		e.IP, e.Count, e.Offer, e.Ack, e.Nack,
+	return fmt.Sprintf("type=DHCP,sv=%s,count=%d,offer=%d,ack=%d,nak=%d,ft=%s,lt=%s",
+		e.Server, e.Count, e.Offer, e.Ack, e.Nack,
 		time.Unix(e.FirstTime, 0).Format(time.RFC3339),
 		time.Unix(e.LastTime, 0).Format(time.RFC3339),
 	)
@@ -67,7 +67,7 @@ func updateDHCP(dhcp *layers.DHCPv4, src string) {
 	}
 	now := time.Now().Unix()
 	DHCPServer.Store(src, &DHCPServerEnt{
-		IP:        src,
+		Server:    src,
 		Count:     1,
 		Offer:     int64(offer),
 		Ack:       int64(ack),
@@ -83,7 +83,7 @@ func sendDHCPReport(now, st, rt int64) {
 	DHCPServer.Range(func(k, v interface{}) bool {
 		if e, ok := v.(*DHCPServerEnt); ok {
 			if e.LastTime < rt {
-				DHCPServer.Delete(e.IP)
+				DHCPServer.Delete(e.Server)
 				return true
 			}
 			if e.SendTime < st {

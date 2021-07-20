@@ -109,7 +109,7 @@ func checkPacket(packet gopacket.Packet) {
 			if !ok {
 				return
 			}
-			updateDNS(dns, src, macaddr)
+			updateDNS(dns, src, dst, macaddr)
 			return
 		}
 		ntpLater := packet.Layer(layers.LayerTypeNTP)

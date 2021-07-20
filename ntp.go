@@ -9,7 +9,7 @@ import (
 )
 
 type NTPServerEnt struct {
-	IP          string
+	Server      string
 	LastClient  string
 	Version     uint8
 	Stratum     uint8
@@ -22,8 +22,8 @@ type NTPServerEnt struct {
 }
 
 func (e *NTPServerEnt) String() string {
-	return fmt.Sprintf("type=NTP,ip=%s,count=%d,change=%d,client=%s,version=%d,stratum=%d,refid=0x%0x,ft=%s,lt=%s",
-		e.IP, e.Count, e.Change, e.LastClient,
+	return fmt.Sprintf("type=NTP,sv=%s,count=%d,change=%d,lcl=%s,version=%d,stratum=%d,refid=0x%0x,ft=%s,lt=%s",
+		e.Server, e.Count, e.Change, e.LastClient,
 		e.Version, e.Stratum, e.ReferenceID,
 		time.Unix(e.FirstTime, 0).Format(time.RFC3339),
 		time.Unix(e.LastTime, 0).Format(time.RFC3339),
@@ -48,7 +48,7 @@ func updateNTP(ntp *layers.NTP, src, dst string) {
 	}
 	now := time.Now().Unix()
 	NTPServer.Store(src, &NTPServerEnt{
-		IP:          src,
+		Server:      src,
 		LastClient:  dst,
 		Count:       1,
 		Version:     uint8(ntp.Version),
@@ -64,7 +64,7 @@ func sendNTPReport(now, st, rt int64) {
 	NTPServer.Range(func(k, v interface{}) bool {
 		if e, ok := v.(*NTPServerEnt); ok {
 			if e.LastTime < rt {
-				NTPServer.Delete(e.IP)
+				NTPServer.Delete(k)
 				return true
 			}
 			if e.SendTime < st {

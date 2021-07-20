@@ -16,7 +16,7 @@ import (
 	"github.com/google/gopacket/pcap"
 )
 
-var version = "v1.0.1"
+var version = "v1.1.0"
 var commit = ""
 var syslogDst = ""
 var iface = ""
