@@ -35,7 +35,8 @@ func (e *DNSEnt) String() string {
 var DNSQuery sync.Map
 
 func updateDNS(dns *layers.DNS, src, dst, mac string) {
-	if dns.OpCode != layers.DNSOpCodeQuery {
+	if dns.OpCode != layers.DNSOpCodeQuery || dns.QR {
+		// 問い合わせ以外は対象としない
 		return
 	}
 	for _, q := range dns.Questions {
