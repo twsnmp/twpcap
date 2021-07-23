@@ -14,7 +14,7 @@ type DHCPServerEnt struct {
 	Count     int64
 	Offer     int64
 	Ack       int64
-	Nack      int64
+	Nak       int64
 	FirstTime int64
 	LastTime  int64
 	SendTime  int64
@@ -22,7 +22,7 @@ type DHCPServerEnt struct {
 
 func (e *DHCPServerEnt) String() string {
 	return fmt.Sprintf("type=DHCP,sv=%s,count=%d,offer=%d,ack=%d,nak=%d,ft=%s,lt=%s",
-		e.Server, e.Count, e.Offer, e.Ack, e.Nack,
+		e.Server, e.Count, e.Offer, e.Ack, e.Nak,
 		time.Unix(e.FirstTime, 0).Format(time.RFC3339),
 		time.Unix(e.LastTime, 0).Format(time.RFC3339),
 	)
@@ -43,13 +43,13 @@ func updateDHCP(dhcp *layers.DHCPv4, src string) {
 	}
 	offer := 0
 	ack := 0
-	nack := 0
+	nak := 0
 	switch mt {
 	case layers.DHCPMsgTypeAck:
 		ack = 1
 		updateIPToMAC(dhcp.YourClientIP.String(), net.HardwareAddr(dhcp.ClientHWAddr).String(), 1)
 	case layers.DHCPMsgTypeNak:
-		nack = 1
+		nak = 1
 	case layers.DHCPMsgTypeOffer:
 		offer = 1
 	default:
@@ -59,7 +59,7 @@ func updateDHCP(dhcp *layers.DHCPv4, src string) {
 		if e, ok := v.(*DHCPServerEnt); ok {
 			e.Count++
 			e.Ack += int64(ack)
-			e.Nack += int64(nack)
+			e.Nak += int64(nak)
 			e.Offer += int64(offer)
 			e.LastTime = time.Now().Unix()
 		}
@@ -71,7 +71,7 @@ func updateDHCP(dhcp *layers.DHCPv4, src string) {
 		Count:     1,
 		Offer:     int64(offer),
 		Ack:       int64(ack),
-		Nack:      int64(nack),
+		Nak:       int64(nak),
 		FirstTime: now,
 		LastTime:  now,
 	})
