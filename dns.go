@@ -63,7 +63,6 @@ func updateDNS(dns *layers.DNS, src, dst, mac string) {
 			Count:      1,
 			FirstTime:  now,
 			LastTime:   now,
-			SendTime:   now, //初回を遅延する
 		})
 	}
 }
