@@ -169,6 +169,15 @@ func checkPacket(packet gopacket.Packet) {
 }
 
 var busy = false
+var (
+	ipToMacCount   = 0
+	etherTypeCount = 0
+	dnsCount       = 0
+	dhcpCount      = 0
+	ntpCount       = 0
+	radiusCount    = 0
+	tlsCount       = 0
+)
 
 // syslogでレポートを送信する
 func sendReport() {
@@ -187,5 +196,7 @@ func sendReport() {
 	sendDHCPReport(now, st, rt)
 	sendTLSReport(now, st, rt)
 	sendRADIUSReport(now, st, rt)
+	log.Printf("twpcap report etherType=%d ipToMac=%d dns=%d dhcp=%d ntp=%d tls=%d radius=%d",
+		etherTypeCount, ipToMacCount, dnsCount, dhcpCount, ntpCount, tlsCount, radiusCount)
 	busy = false
 }

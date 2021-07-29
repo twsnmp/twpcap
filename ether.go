@@ -35,6 +35,7 @@ func sendEtherTypeReport(st int64) {
 		EtherType.Delete(key)
 		return true
 	})
+	etherTypeCount++
 	syslogCh <- s
 	lastSendEtherType = time.Now().Unix()
 }

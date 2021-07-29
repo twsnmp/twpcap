@@ -63,6 +63,7 @@ func updateDNS(dns *layers.DNS, src, dst, mac string) {
 			Count:      1,
 			FirstTime:  now,
 			LastTime:   now,
+			SendTime:   now, //初回を遅延する
 		})
 	}
 }
@@ -77,6 +78,7 @@ func sendDNSReport(now, st, rt int64) {
 				return true
 			}
 			if e.SendTime < st {
+				dnsCount++
 				syslogCh <- e.String()
 				e.SendTime = now
 			}

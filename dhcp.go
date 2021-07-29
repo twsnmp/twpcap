@@ -87,6 +87,7 @@ func sendDHCPReport(now, st, rt int64) {
 				return true
 			}
 			if e.SendTime < st {
+				dhcpCount++
 				syslogCh <- e.String()
 				e.SendTime = now
 			}
