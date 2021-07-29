@@ -189,13 +189,13 @@ func sendReport() {
 	now := time.Now().Unix()
 	st := time.Now().Add(-time.Second * time.Duration(syslogInterval)).Unix()
 	rt := time.Now().Add(-time.Second * time.Duration(retentionData)).Unix()
-	sendIPToMACReport(now, st, rt)
 	sendEtherTypeReport(st)
-	sendDNSReport(now, st, rt)
 	sendNTPReport(now, st, rt)
 	sendDHCPReport(now, st, rt)
-	sendTLSReport(now, st, rt)
 	sendRADIUSReport(now, st, rt)
+	sendIPToMACReport(now, st, rt)
+	sendTLSReport(now, st, rt)
+	sendDNSReport(now, st, rt)
 	log.Printf("twpcap report etherType=%d ipToMac=%d dns=%d dhcp=%d ntp=%d tls=%d radius=%d",
 		etherTypeCount, ipToMacCount, dnsCount, dhcpCount, ntpCount, tlsCount, radiusCount)
 	busy = false

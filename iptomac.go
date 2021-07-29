@@ -59,6 +59,7 @@ func sendIPToMACReport(now, st, rt int64) {
 				return true
 			}
 			if e.SendTime < st {
+				ipToMacCount++
 				syslogCh <- e.String()
 				e.SendTime = now
 			}
