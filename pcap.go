@@ -32,6 +32,7 @@ func startPcap(ctx context.Context) {
 			total++
 		case <-timer.C:
 			syslogCh <- fmt.Sprintf("type=Stats,total=%d,count=%d,ps=%.2f", total, count, float64(count)/60.0)
+			sendMonitor()
 			count = 0
 			go sendReport()
 		case <-ctx.Done():
