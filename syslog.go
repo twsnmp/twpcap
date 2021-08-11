@@ -11,6 +11,7 @@ import (
 )
 
 var syslogCh chan string
+var syslogCount = 0
 
 func startSyslog(ctx context.Context) {
 	syslogCh = make(chan string, 2000)
@@ -42,6 +43,7 @@ func startSyslog(ctx context.Context) {
 			log.Println("stop syslog")
 			return
 		case msg := <-syslogCh:
+			syslogCount++
 			s := fmt.Sprintf("<%d>%s %s twpcap: %s", 21*8+6, time.Now().Format("2006-01-02T15:04:05-07:00"), host, msg)
 			for _, d := range dst {
 				d.Write([]byte(s))
