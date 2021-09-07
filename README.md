@@ -1,5 +1,5 @@
 # twpcap
-Network sensor by packet capture fo TWSNMP
+Network sensor by packet capture for TWSNMP
 TWSNMPのためのパケットキャプチャーによるネットワークセンサー
 
 [![Godoc Reference](https://godoc.org/github.com/twsnmp/twpcap?status.svg)](http://godoc.org/github.com/twsnmp/twpcap)
