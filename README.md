@@ -1,5 +1,5 @@
 # twpcap
-Network sensor by packet capture for TWSNMP
+Network sensor by packet capture for TWSNMP FC  
 TWSNMPのためのパケットキャプチャーによるネットワークセンサー
 
 [![Godoc Reference](https://godoc.org/github.com/twsnmp/twpcap?status.svg)](http://godoc.org/github.com/twsnmp/twpcap)
@@ -7,7 +7,8 @@ TWSNMPのためのパケットキャプチャーによるネットワークセ�
 
 ## Overview
 
-パケットキャプチャーからTWSNMPで監視するために必要な情報をsyslogで送信するためのセンサープログラムです。
+パケットキャプチャーからTWSNMP FCで監視するために必要な情報をsyslogで  
+送信するためのセンサープログラムです。  
 現在のバージョンでは以下の情報を取得できます。
 
 - モニタしたパケット数の統計情報
@@ -21,14 +22,14 @@ TWSNMPのためのパケットキャプチャーによるネットワークセ�
 
 ## Status
 
-v1.0.0をリリースしました。(2021/7/16)
-（基本的な機能の動作する状態）
-v1.1.0をリリースしました。(2021/7/26)
-（バグフィック版）
-v1.2.0をリリースしました。(2021/8/9)
-(バグフィックス、リソースモニタ追加)
-v1.2.1をリリースしました。(2021/8/21)
-(バグフィックス、モニタ機能に識別情報追加)
+v1.0.0をリリースしました。(2021/7/16)  
+（基本的な機能の動作する状態）  
+v1.1.0をリリースしました。(2021/7/26)  
+（バグフィック版）  
+v1.2.0をリリースしました。(2021/8/9)  
+(バグフィックス、リソースモニタ追加)  
+v1.2.1をリリースしました。(2021/8/21)  
+(バグフィックス、モニタ機能に識別情報追加)  
 
 ## Build
 
@@ -93,7 +94,8 @@ syslogの送信先はカンマ区切りで複数指定できます。:の続け�
 
 ### パケットキャプチャーするLAN I/Fのリスト
 
-Mac OS,Windows,Linuxの環境では以下のコマンドで表示できます。（例はLinux場合）
+Mac OS,Windows,Linuxの環境では以下のコマンドで表示できます。  
+（例はLinux場合）
 
 ```
 #./twpcap -list
@@ -135,6 +137,14 @@ Docker環境では以下のコマンドを実行すれば起動できます。
 ```
 #docker run --rm -d  --name twpcap  --net host twsnmp/twpcap  -iface eth3 -syslog 192.168.1.1
 ```
+
+## TWSNMP FCのパッケージ
+
+TWSNMP FCのパッケージにtwpcapが含まれています。  
+Windows/Mac OS/Linux(amd64,arm)があります。  
+詳しくは、  
+https://note.com/twsnmp/n/nc6e49c284afb  
+を見てください。
 
 ## Copyright
 
