@@ -24,6 +24,8 @@ test:
 clean:
 	rm -rf $(TARGETS) $(DIST)/*.zip
 mac: $(DIST)/twpcap.app
+linux: $(DIST)/twpcap
+windows: $(DIST)/twpcap.exe
 zip: $(TARGETS)
 	cd dist && $(ZIP) twpcap_win.zip twpcap.exe
 	cd dist && $(ZIP) twpcap_mac.zip twpcap.app

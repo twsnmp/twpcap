@@ -410,6 +410,8 @@ var cipherSuiteMap = map[uint16]string{
 	0xd002: "TLS_ECDHE_PSK_WITH_AES_256_GCM_SHA384",
 	0xd003: "TLS_ECDHE_PSK_WITH_AES_128_CCM_8_SHA256",
 	0xd005: "TLS_ECDHE_PSK_WITH_AES_128_CCM_SHA256",
+	// Not found
+	0xffff: "Unknown",
 }
 
 func updateTLS(tlsp *layers.TLS, src, dst string, sport, dport int) {
@@ -440,12 +442,13 @@ func updateTLS(tlsp *layers.TLS, src, dst string, sport, dport int) {
 	if !ok {
 		now := time.Now().Unix()
 		e = &TLSFlowEnt{
-			Client:    cl,
-			Server:    sv,
-			Service:   serv,
-			Count:     1,
-			FirstTime: now,
-			LastTime:  now,
+			Client:      cl,
+			Server:      sv,
+			Service:     serv,
+			Count:       1,
+			CipherSuite: 0xffff,
+			FirstTime:   now,
+			LastTime:    now,
 		}
 		TLSFlow.Store(key, e)
 	} else {
@@ -473,7 +476,7 @@ func updateTLS(tlsp *layers.TLS, src, dst string, sport, dport int) {
 			if bytes.Contains(tlsp.Contents, []byte{0x00, 0x2b, 0x00, 0x02, 0x03, 0x04}) {
 				e.MaxVersion = 0x0304
 			}
-			if e.CipherSuite == 0 {
+			if e.CipherSuite == 0xffff {
 				e.CipherSuite = getCipherSuite(tlsp.Contents)
 			}
 		}
@@ -512,7 +515,7 @@ func checkDecodeErrorTLSPacket(src, dst string, sport int, b []byte) {
 		if bytes.Contains(b, []byte{0x00, 0x2b, 0x00, 0x02, 0x03, 0x04}) {
 			e.MaxVersion = 0x0304
 		}
-		if e.CipherSuite == 0 {
+		if e.CipherSuite == 0xffff {
 			e.CipherSuite = getCipherSuite(b)
 		}
 	}
@@ -521,17 +524,17 @@ func checkDecodeErrorTLSPacket(src, dst string, sport int, b []byte) {
 func getCipherSuite(b []byte) uint16 {
 	if len(b) < (5+4+2+32+2) || b[0] != 0x16 {
 		// Not handshake
-		return 0x0000
+		return 0xffff
 	}
 	if b[5] != 0x02 {
 		// Not Server Hello
-		return 0x0000
+		return 0xffff
 	}
 	sidlen := int(b[5+4+2+32])
 	pos := sidlen + 5 + 4 + 2 + 32 + 1
 	if sidlen < 0 || pos+1 >= len(b) {
 		// invalid length
-		return 0x0000
+		return 0xffff
 	}
 	return uint16(b[pos])<<8 + uint16(b[pos+1])
 }
