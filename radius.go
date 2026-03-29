@@ -92,7 +92,7 @@ func sendRADIUSReport(now, st, rt int64) {
 			}
 			if e.SendTime < st {
 				radiusCount++
-				syslogCh <- e.String()
+				sendSyslog(e.String())
 				e.SendTime = now
 			}
 		}

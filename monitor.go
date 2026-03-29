@@ -65,5 +65,5 @@ func sendMonitor() {
 		return
 	}
 	msg += fmt.Sprintf(",process=%d,param=%s", len(pids), iface)
-	syslogCh <- msg
+	sendSyslog(msg)
 }

@@ -69,7 +69,7 @@ func sendNTPReport(now, st, rt int64) {
 			}
 			if e.SendTime < st {
 				ntpCount++
-				syslogCh <- e.String()
+				sendSyslog(e.String())
 				e.SendTime = now
 			}
 		}

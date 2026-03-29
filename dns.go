@@ -276,7 +276,7 @@ func sendDNSReport(now, st, rt int64) {
 			}
 			if e.SendTime < st {
 				dnsCount++
-				syslogCh <- e.String()
+				sendSyslog(e.String())
 				e.SendTime = now
 			}
 		}

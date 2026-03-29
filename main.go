@@ -7,8 +7,6 @@ import (
 	"log"
 	"os"
 	"os/signal"
-	"runtime"
-	"runtime/pprof"
 	"strings"
 	"syscall"
 	"time"
@@ -16,15 +14,14 @@ import (
 	"github.com/google/gopacket/pcap"
 )
 
-var version = "v1.2.1"
+var version = "v2.0.0"
 var commit = ""
 var syslogDst = ""
 var iface = ""
+var debug = false
 var list = false
 var syslogInterval = 600
 var retentionData = 3600
-var cpuprofile string
-var memprofile string
 
 func init() {
 	flag.StringVar(&syslogDst, "syslog", "", "syslog destnation list")
@@ -32,8 +29,7 @@ func init() {
 	flag.IntVar(&syslogInterval, "interval", 600, "syslog send interval(sec)")
 	flag.IntVar(&retentionData, "retention", 3600, "data retention time(sec)")
 	flag.BoolVar(&list, "list", false, "list interface")
-	flag.StringVar(&cpuprofile, "cpuprofile", "", "write cpu profile to `file`")
-	flag.StringVar(&memprofile, "memprofile", "", "write memory profile to `file`")
+	flag.BoolVar(&debug, "debug", false, "debug mode")
 	flag.VisitAll(func(f *flag.Flag) {
 		if s := os.Getenv("TWPCAP_" + strings.ToUpper(f.Name)); s != "" {
 			f.Value.Set(s)
@@ -52,28 +48,6 @@ func (writer logWriter) Write(bytes []byte) (int, error) {
 func main() {
 	log.SetFlags(0)
 	log.SetOutput(new(logWriter))
-	if cpuprofile != "" {
-		f, err := os.Create(cpuprofile)
-		if err != nil {
-			log.Fatalf("could not create CPU profile: %v", err)
-		}
-		defer f.Close()
-		if err := pprof.StartCPUProfile(f); err != nil {
-			log.Fatalf("could not start CPU profile: %v", err)
-		}
-		defer pprof.StopCPUProfile()
-	}
-	if memprofile != "" {
-		f, err := os.Create(memprofile)
-		if err != nil {
-			log.Fatalf("could not create memory profile: %v", err)
-		}
-		defer f.Close()
-		runtime.GC() // get up-to-date statistics
-		if err := pprof.WriteHeapProfile(f); err != nil {
-			log.Fatalf("could not write memory profile:%v", err)
-		}
-	}
 	log.Printf("version=%s", fmt.Sprintf("%s(%s)", version, commit))
 	if list {
 		listIface()
@@ -91,7 +65,7 @@ func main() {
 	go startSyslog(ctx)
 	go startPcap(ctx)
 	<-quit
-	syslogCh <- "quit by signal"
+	sendSyslog("quit by signal")
 	time.Sleep(time.Second * 1)
 	log.Println("quit by signal")
 	cancel()

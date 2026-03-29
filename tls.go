@@ -493,7 +493,7 @@ func sendTLSReport(now, st, rt int64) {
 			}
 			if e.SendTime < st && e.MinVersion > 0 {
 				tlsCount++
-				syslogCh <- e.String()
+				sendSyslog(e.String())
 				e.SendTime = now
 			}
 		}
