@@ -277,6 +277,18 @@ func sendDNSReport(now, st, rt int64) {
 			if e.SendTime < st {
 				dnsCount++
 				sendSyslog(e.String())
+				publishMQTT(&mqttDNSDataEnt{
+					Time:       time.Now().Format(time.RFC3339),
+					Type:       e.Type,
+					Name:       e.Name,
+					Count:      int(e.Count),
+					Change:     e.Change,
+					Server:     e.Server,
+					LastClient: e.LastClient,
+					LastMAC:    e.LastMAC,
+					FirstTime:  time.Unix(e.FirstTime, 0).Format(time.RFC3339),
+					LastTime:   time.Unix(e.LastTime, 0).Format(time.RFC3339),
+				})
 				e.SendTime = now
 			}
 		}

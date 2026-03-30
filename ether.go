@@ -25,10 +25,15 @@ func sendEtherTypeReport(st int64) {
 		return
 	}
 	s := "type=EtherType"
+	et := &mqttEtherTypeDataEnt{
+		Time:    time.Now().Format(time.RFC3339),
+		TypeMap: make(map[string]int),
+	}
 	EtherType.Range(func(key, value interface{}) bool {
 		if t, ok := key.(uint16); ok {
 			if c, ok := value.(int); ok {
 				s += fmt.Sprintf(",0x%04x=%d", t, c)
+				et.TypeMap[fmt.Sprintf("0x%04x", t)] = c
 			}
 		}
 		//レポートしたらクリアする
@@ -37,5 +42,6 @@ func sendEtherTypeReport(st int64) {
 	})
 	etherTypeCount++
 	sendSyslog(s)
+	publishMQTT(et)
 	lastSendEtherType = time.Now().Unix()
 }

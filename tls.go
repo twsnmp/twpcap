@@ -494,6 +494,20 @@ func sendTLSReport(now, st, rt int64) {
 			if e.SendTime < st && e.MinVersion > 0 {
 				tlsCount++
 				sendSyslog(e.String())
+				publishMQTT(&mqttTLSDataEnt{
+					Time:        time.Now().Format(time.RFC3339),
+					Client:      e.Client,
+					Server:      e.Server,
+					Service:     e.Service,
+					MinVersion:  e.MinVersion,
+					MaxVersion:  e.MaxVersion,
+					CipherSuite: e.CipherSuite,
+					Count:       e.Count,
+					Handshake:   e.Handshake,
+					Alert:       e.Alert,
+					FirstTime:   time.Unix(e.FirstTime, 0).Format(time.RFC3339),
+					LastTime:    time.Unix(e.LastTime, 0).Format(time.RFC3339),
+				})
 				e.SendTime = now
 			}
 		}

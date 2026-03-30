@@ -70,6 +70,18 @@ func sendNTPReport(now, st, rt int64) {
 			if e.SendTime < st {
 				ntpCount++
 				sendSyslog(e.String())
+				publishMQTT(&mqttNTPDataEnt{
+					Time:        time.Now().Format(time.RFC3339),
+					Server:      e.Server,
+					LastClient:  e.LastClient,
+					Version:     e.Version,
+					Stratum:     e.Stratum,
+					ReferenceID: e.ReferenceID,
+					Count:       e.Count,
+					Change:      e.Change,
+					FirstTime:   time.Unix(e.FirstTime, 0).Format(time.RFC3339),
+					LastTime:    time.Unix(e.LastTime, 0).Format(time.RFC3339),
+				})
 				e.SendTime = now
 			}
 		}

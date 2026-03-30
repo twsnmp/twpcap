@@ -93,6 +93,18 @@ func sendRADIUSReport(now, st, rt int64) {
 			if e.SendTime < st {
 				radiusCount++
 				sendSyslog(e.String())
+				publishMQTT(&mqttRadiusDataEnt{
+					Time:            time.Now().Format(time.RFC3339),
+					Client:          e.Client,
+					Server:          e.Server,
+					Count:           e.Count,
+					AccessRequest:   e.AccessRequest,
+					AccessAccept:    e.AccessAccept,
+					AccessReject:    e.AccessReject,
+					AccessChallenge: e.AccessChallenge,
+					FirstTime:       time.Unix(e.FirstTime, 0).Format(time.RFC3339),
+					LastTime:        time.Unix(e.LastTime, 0).Format(time.RFC3339),
+				})
 				e.SendTime = now
 			}
 		}

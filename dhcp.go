@@ -89,6 +89,16 @@ func sendDHCPReport(now, st, rt int64) {
 			if e.SendTime < st {
 				dhcpCount++
 				sendSyslog(e.String())
+				publishMQTT(&mqttDHCPDataEnt{
+					Time:      time.Now().Format(time.RFC3339),
+					Server:    e.Server,
+					Count:     int(e.Count),
+					Offer:     e.Offer,
+					Ack:       e.Ack,
+					Nak:       e.Nak,
+					FirstTime: time.Unix(e.FirstTime, 0).Format(time.RFC3339),
+					LastTime:  time.Unix(e.LastTime, 0).Format(time.RFC3339),
+				})
 				e.SendTime = now
 			}
 		}

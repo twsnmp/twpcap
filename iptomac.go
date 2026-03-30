@@ -61,6 +61,16 @@ func sendIPToMACReport(now, st, rt int64) {
 			if e.SendTime < st {
 				ipToMacCount++
 				sendSyslog(e.String())
+				publishMQTT(&mqttIPToMACDataEnt{
+					Time:      time.Now().Format(time.RFC3339),
+					IP:        e.IP,
+					MAC:       e.MAC,
+					Count:     e.Count,
+					Change:    e.Change,
+					DHCP:      e.DHCP,
+					FirstTime: time.Unix(e.FirstTime, 0).Format(time.RFC3339),
+					LastTime:  time.Unix(e.LastTime, 0).Format(time.RFC3339),
+				})
 				e.SendTime = now
 			}
 		}

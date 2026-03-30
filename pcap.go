@@ -32,6 +32,13 @@ func startPcap(ctx context.Context) {
 			total++
 		case <-timer.C:
 			sendSyslog(fmt.Sprintf("type=Stats,total=%d,count=%d,ps=%.2f,send=%d,param=%s", total, count, float64(count)/60.0, syslogCount, iface))
+			publishMQTT(&mqttPcapStatsDataEnt{
+				Time:      time.Now().Format(time.RFC3339),
+				Total:     int(total),
+				Count:     int(count),
+				PS:        float64(count) / 60.0,
+				Interface: iface,
+			})
 			count = 0
 			syslogCount = 0
 			sendMonitor()

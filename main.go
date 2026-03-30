@@ -22,6 +22,11 @@ var debug = false
 var list = false
 var syslogInterval = 600
 var retentionData = 3600
+var mqttDst = ""
+var mqttUser = ""
+var mqttPassword = ""
+var mqttClientID = "twpcap"
+var mqttTopic = "twpcap"
 
 func init() {
 	flag.StringVar(&syslogDst, "syslog", "", "syslog destnation list")
@@ -30,6 +35,11 @@ func init() {
 	flag.IntVar(&retentionData, "retention", 3600, "data retention time(sec)")
 	flag.BoolVar(&list, "list", false, "list interface")
 	flag.BoolVar(&debug, "debug", false, "debug mode")
+	flag.StringVar(&mqttDst, "mqtt", "", "mqtt destination list")
+	flag.StringVar(&mqttUser, "mqttuser", "", "mqtt user name")
+	flag.StringVar(&mqttPassword, "mqttpassword", "", "mqtt password")
+	flag.StringVar(&mqttClientID, "mqttclient", "twpcap", "mqtt client id")
+	flag.StringVar(&mqttTopic, "mqtttopic", "twpcap", "mqtt base topic")
 	flag.VisitAll(func(f *flag.Flag) {
 		if s := os.Getenv("TWPCAP_" + strings.ToUpper(f.Name)); s != "" {
 			f.Value.Set(s)
@@ -56,13 +66,14 @@ func main() {
 	if iface == "" {
 		log.Fatalln("no monitor interface")
 	}
-	if syslogDst == "" {
-		log.Fatalln("no syslog distenation")
+	if syslogDst == "" && mqttDst == "" {
+		log.Fatalln("no syslog or mqtt distenation")
 	}
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, os.Interrupt, syscall.SIGTERM)
 	ctx, cancel := context.WithCancel(context.Background())
 	go startSyslog(ctx)
+	go startMQTT(ctx)
 	go startPcap(ctx)
 	<-quit
 	sendSyslog("quit by signal")
