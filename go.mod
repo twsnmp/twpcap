@@ -1,10 +1,10 @@
 module github.com/twsnmp/twpcap
 
-go 1.24.0
+go 1.25.0
 
 require (
 	github.com/eclipse/paho.mqtt.golang v1.5.1
-	github.com/google/gopacket v1.1.19
+	github.com/gopacket/gopacket v1.3.1
 	github.com/shirou/gopsutil v3.21.7+incompatible
 )
 

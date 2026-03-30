@@ -17,3 +17,5 @@
 
 dist/
 Docker/twpcap
+
+.linux_build

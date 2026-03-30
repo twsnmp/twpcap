@@ -11,7 +11,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/google/gopacket/pcap"
+	"github.com/gopacket/gopacket/pcap"
 )
 
 var version = "v2.0.0"

@@ -5,7 +5,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/google/gopacket/layers"
+	"github.com/gopacket/gopacket/layers"
 )
 
 type RADIUSFlowEnt struct {

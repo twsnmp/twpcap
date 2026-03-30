@@ -1,7 +1,7 @@
 .PHONY: all test clean zip mac docker
 
 ### バージョンの定義
-VERSION     := "v1.6.0"
+VERSION     := "v2.0.0"
 COMMIT      := $(shell git rev-parse --short HEAD)
 WD          := $(shell pwd)
 ### コマンドの定義
@@ -14,7 +14,7 @@ ZIP          = zip
 ### ターゲットパラメータ
 DIST = dist
 SRC = ./main.go ./pcap.go ./syslog.go ./tls.go ./radius.go ./dhcp.go ./dns.go
-TARGETS     = $(DIST)/twpcap.exe $(DIST)/twpcap.app $(DIST)/twpcap $(DIST)/twpcap.arm $(DIST)/twpcap.arm64
+TARGETS     = $(DIST)/twpcap.exe $(DIST)/twpcap.darwin.amd64 $(DIST)/twpcap.darwin.arm64 $(DIST)/twpcap $(DIST)/twpcap.arm $(DIST)/twpcap.arm64
 GO_PKGROOT  = ./...
 
 ### PHONY ターゲットのビルドルール
@@ -22,13 +22,13 @@ all: $(TARGETS)
 test:
 	env GOOS=$(GOOS) $(GO_TEST) $(GO_PKGROOT)
 clean:
-	rm -rf $(TARGETS) $(DIST)/*.zip
-mac: $(DIST)/twpcap.app
+	rm -rf $(TARGETS) $(DIST)/*.zip .linux_build
+mac: $(DIST)/twpcap.darwin.amd64 $(DIST)/twpcap.darwin.arm64
 linux: $(DIST)/twpcap
 windows: $(DIST)/twpcap.exe
 zip: $(TARGETS)
 	cd dist && $(ZIP) twpcap_win.zip twpcap.exe
-	cd dist && $(ZIP) twpcap_mac.zip twpcap.app
+	cd dist && $(ZIP) twpcap_mac.zip twpcap.darwin.*
 	cd dist && $(ZIP) twpcap_linux_amd64.zip twpcap
 	cd dist && $(ZIP) twpcap_linux_arm.zip twpcap.arm*
 
@@ -45,11 +45,14 @@ dockerarm: Docker/Dockerfile dist/twpcap.arm dist/twpcap.arm64
 ### 実行ファイルのビルドルール
 $(DIST)/twpcap.exe: $(SRC)
 	env GO111MODULE=on GOOS=windows GOARCH=amd64 $(GO_BUILD) $(GO_LDFLAGS) -o $@
-$(DIST)/twpcap.app: $(SRC)
-	env GO111MODULE=on GOOS=darwin GOARCH=amd64 $(GO_BUILD) $(GO_LDFLAGS) -o $@
-$(DIST)/twpcap.arm: $(SRC)
-	docker run --rm -v "$(WD)":/twpcap -w /twpcap golang:1.19.2-buster /twpcap/mkarm.sh $(DIST) $(VERSION) $(COMMIT)
-$(DIST)/twpcap.arm64: $(SRC)
-	docker run --rm -v "$(WD)":/twpcap -w /twpcap golang:1.19.2-buster /twpcap/mkarm64.sh $(DIST) $(VERSION) $(COMMIT)
-$(DIST)/twpcap: $(SRC)
-	docker run --rm -v "$(WD)":/twpcap -w /twpcap golang:1.19.2-buster /twpcap/mklinux.sh $(DIST) $(VERSION) $(COMMIT)
+$(DIST)/twpcap.darwin.amd64: $(SRC)
+	env GO111MODULE=on GOOS=darwin GOARCH=amd64 CGO_ENABLED=1 $(GO_BUILD) $(GO_LDFLAGS) -o $@
+$(DIST)/twpcap.darwin.arm64: $(SRC)
+	env GO111MODULE=on GOOS=darwin GOARCH=arm64 CGO_ENABLED=1 $(GO_BUILD) $(GO_LDFLAGS) -o $@
+
+$(DIST)/twpcap $(DIST)/twpcap.arm $(DIST)/twpcap.arm64: .linux_build
+	@ls $@ > /dev/null 2>&1
+
+.linux_build: $(SRC) mklinux.sh
+	docker run --rm -v "$(WD)":/twpcap -w /twpcap golang:1.25 /twpcap/mklinux.sh $(DIST) $(VERSION) $(COMMIT)
+	touch .linux_build
