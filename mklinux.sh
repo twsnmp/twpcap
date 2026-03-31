@@ -33,7 +33,7 @@ export GOARCH=amd64
 export CC=gcc
 export PKG_CONFIG_PATH=/usr/lib/x86_64-linux-gnu/pkgconfig
 PCAP_LIBS=$(pkg-config --static --libs libpcap dbus-1)
-go build -o "$DIST/twpcap" -ldflags="-s -w -X main.version=$VERSION -X main.commit=$COMMIT -extldflags '-static $PCAP_LIBS -lcap -lpthread -ldl'"
+go build -buildvcs=false -o "$DIST/twpcap" -ldflags="-s -w -X main.version=$VERSION -X main.commit=$COMMIT -extldflags '-static $PCAP_LIBS -lcap -lpthread -ldl'"
 
 # arm
 echo "Building for linux/arm..."
@@ -42,7 +42,7 @@ export GOARM=7
 export CC=arm-linux-gnueabihf-gcc
 export PKG_CONFIG_PATH=/usr/lib/arm-linux-gnueabihf/pkgconfig
 PCAP_LIBS=$(pkg-config --static --libs libpcap dbus-1)
-go build -o "$DIST/twpcap.arm" -ldflags="-s -w -X main.version=$VERSION -X main.commit=$COMMIT -extldflags '-static $PCAP_LIBS -lcap -lpthread -ldl'"
+go build -buildvcs=false -o "$DIST/twpcap.arm" -ldflags="-s -w -X main.version=$VERSION -X main.commit=$COMMIT -extldflags '-static $PCAP_LIBS -lcap -lpthread -ldl'"
 
 # arm64
 echo "Building for linux/arm64..."
@@ -51,4 +51,4 @@ export CC=aarch64-linux-gnu-gcc
 export PKG_CONFIG_PATH=/usr/lib/aarch64-linux-gnu/pkgconfig
 PCAP_LIBS=$(pkg-config --static --libs libpcap dbus-1)
 unset GOARM
-go build -o "$DIST/twpcap.arm64" -ldflags="-s -w -X main.version=$VERSION -X main.commit=$COMMIT -extldflags '-static $PCAP_LIBS -lcap -lpthread -ldl'"
+go build -buildvcs=false -o "$DIST/twpcap.arm64" -ldflags="-s -w -X main.version=$VERSION -X main.commit=$COMMIT -extldflags '-static $PCAP_LIBS -lcap -lpthread -ldl'"

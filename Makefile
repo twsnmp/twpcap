@@ -6,7 +6,7 @@ COMMIT      := $(shell git rev-parse --short HEAD)
 WD          := $(shell pwd)
 ### コマンドの定義
 GO          = go
-GO_BUILD    = $(GO) build
+GO_BUILD    = $(GO) build -buildvcs=false
 GO_TEST     = $(GO) test -v
 GO_LDFLAGS  = -ldflags="-s -w -X main.version=$(VERSION) -X main.commit=$(COMMIT)"
 ZIP          = zip
