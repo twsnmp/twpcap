@@ -16,6 +16,6 @@
 # vendor/
 
 dist/
-Docker/twpcap
+Docker/twpcap*
 
 .linux_build

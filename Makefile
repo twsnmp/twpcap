@@ -33,14 +33,14 @@ zip: $(TARGETS)
 	cd dist && $(ZIP) twpcap_linux_arm.zip twpcap.arm*
 
 docker:  $(DIST)/twpcap Docker/Dockerfile
-	cp dist/twpcap Docker/
-	cd Docker && docker build -t twsnmp/twpcap .
+	cp dist/twpcap Docker/twpcap.amd64
+	cd Docker && docker build --build-arg TARGETARCH=amd64 -t twsnmp/twpcap .
 
-dockerarm: Docker/Dockerfile dist/twpcap.arm dist/twpcap.arm64
-	cp dist/twpcap.arm Docker/twpcap
-	cd Docker && docker buildx build --platform linux/arm/v7 -t twsnmp/twpcap:armv7_$(VERSION) --push .
-	cp dist/twpcap.arm64 Docker/twpcap
-	cd Docker && docker buildx build --platform linux/arm64 -t twsnmp/twpcap:arm64_$(VERSION) --push .
+docker-multiarch: Docker/Dockerfile dist/twpcap dist/twpcap.arm dist/twpcap.arm64
+	cp dist/twpcap Docker/twpcap.amd64
+	cp dist/twpcap.arm Docker/twpcap.arm
+	cp dist/twpcap.arm64 Docker/twpcap.arm64
+	cd Docker && docker buildx build --platform linux/amd64,linux/arm/v7,linux/arm64 -t twsnmp/twpcap:$(VERSION) --push .
 
 ### 実行ファイルのビルドルール
 $(DIST)/twpcap.exe: $(SRC)
