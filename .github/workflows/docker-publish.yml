@@ -5,6 +5,11 @@ on:
     branches: [ "master", "main" ]
     tags: [ 'v*.*.*' ]
   workflow_dispatch:
+    inputs:
+      tag_name:
+        description: 'Release Tag Name (e.g. v2.0.0)'
+        required: true
+        default: 'v2.0.0-test'
 
 env:
   REGISTRY: ghcr.io
@@ -134,6 +139,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: dist-release/*.zip
+          tag_name: ${{ github.event.inputs.tag_name || github.ref_name }}
           draft: false
           prerelease: false
         env:
