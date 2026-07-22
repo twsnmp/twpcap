@@ -1,4 +1,4 @@
-.PHONY: all test clean zip mac docker
+.PHONY: all test clean zip zip-win zip-mac zip-linux mac docker
 
 ### バージョンの定義
 VERSION     := "v2.0.0"
@@ -26,11 +26,17 @@ clean:
 mac: $(DIST)/twpcap.darwin.amd64 $(DIST)/twpcap.darwin.arm64
 linux: $(DIST)/twpcap
 windows: $(DIST)/twpcap.exe
-zip: $(TARGETS)
+zip-win: $(DIST)/twpcap.exe
 	cd dist && $(ZIP) twpcap_win.zip twpcap.exe
+
+zip-mac: $(DIST)/twpcap.darwin.amd64 $(DIST)/twpcap.darwin.arm64
 	cd dist && $(ZIP) twpcap_mac.zip twpcap.darwin.*
+
+zip-linux: $(DIST)/twpcap $(DIST)/twpcap.arm $(DIST)/twpcap.arm64
 	cd dist && $(ZIP) twpcap_linux_amd64.zip twpcap
 	cd dist && $(ZIP) twpcap_linux_arm.zip twpcap.arm*
+
+zip: zip-win zip-mac zip-linux
 
 docker:  $(DIST)/twpcap Docker/Dockerfile
 	cp dist/twpcap Docker/twpcap.amd64

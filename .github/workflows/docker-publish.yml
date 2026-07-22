@@ -4,6 +4,7 @@ on:
   push:
     branches: [ "master", "main" ]
     tags: [ 'v*.*.*' ]
+  workflow_dispatch:
 
 env:
   REGISTRY: ghcr.io
@@ -19,6 +20,11 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.25'
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -61,3 +67,74 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           platforms: linux/amd64,linux/arm/v7,linux/arm64
+
+      - name: Build Windows Binary and Zip
+        if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch'
+        run: |
+          make zip-win
+
+      - name: Zip Linux Binaries
+        if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch'
+        run: |
+          make zip-linux
+
+      - name: Upload Windows & Linux Artifacts
+        if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch'
+        uses: actions/upload-artifact@v4
+        with:
+          name: twpcap-win-linux
+          path: |
+            dist/twpcap_win.zip
+            dist/twpcap_linux_amd64.zip
+            dist/twpcap_linux_arm.zip
+
+  build-mac:
+    if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch'
+    runs-on: macos-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.25'
+
+      - name: Build macOS Binaries and Zip
+        run: |
+          make zip-mac
+
+      - name: Upload macOS Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: twpcap-mac
+          path: dist/twpcap_mac.zip
+
+  create-release:
+    if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch'
+    needs: [build-and-push, build-mac]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: dist-artifacts
+
+      - name: Flatten directory structure
+        run: |
+          mkdir -p dist-release
+          find dist-artifacts -name "*.zip" -exec cp {} dist-release/ \;
+          ls -la dist-release/
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist-release/*.zip
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
