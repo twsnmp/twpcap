@@ -1,6 +1,8 @@
 # twpcap
 Network sensor by packet capture for TWSNMP FC
 
+[English](./README.md) | [日本語](./README_ja.md)
+
 [![Godoc Reference](https://godoc.org/github.com/twsnmp/twpcap?status.svg)](http://godoc.org/github.com/twsnmp/twpcap)
 [![Go Report Card](https://goreportcard.com/badge/twsnmp/twpcap)](https://goreportcard.com/report/twsnmp/twpcap)
 
@@ -23,11 +25,23 @@ The current version can obtain the following information:
 
 ## Status
 
-v1.0.0 released. (2021/7/16)
-v1.1.0 released. (2021/7/26)
-v1.2.0 released. (2021/8/9)
-v1.2.1 released. (2021/8/21)
-v2.0.0 released. (MQTT support, environment variable support)
+- v1.0.0 released. (2021/7/16)
+- v1.1.0 released. (2021/7/26)
+- v1.2.0 released. (2021/8/9)
+- v1.2.1 released. (2021/8/21)
+- v2.0.0 released. (MQTT support, environment variable support)
+- v2.0.1 released. (2026/7/23) (Dependency update for CVE-2026-25680, build/release workflow improvements, and documentation updates)
+
+## Download
+
+### Executable Binary
+You can download the pre-compiled binaries for various platforms from [GitHub Releases](https://github.com/twsnmp/twpcap/releases).
+
+### Docker Image
+The Docker image is distributed via GitHub Container Registry (ghcr.io).
+```bash
+docker pull ghcr.io/twsnmp/twpcap:latest
+```
 
 ## Build
 
