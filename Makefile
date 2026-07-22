@@ -1,7 +1,7 @@
 .PHONY: all test clean zip zip-win zip-mac zip-linux mac docker
 
 ### バージョンの定義
-VERSION     := "v2.0.0"
+VERSION     := $(shell git describe --tags --always 2>/dev/null || echo "v2.0.0")
 COMMIT      := $(shell git rev-parse --short HEAD)
 WD          := $(shell pwd)
 ### コマンドの定義
