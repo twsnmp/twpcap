@@ -4,7 +4,7 @@ go 1.25.0
 
 require (
 	github.com/eclipse/paho.mqtt.golang v1.5.1
-	github.com/gopacket/gopacket v1.3.1
+	github.com/gopacket/gopacket v1.6.1
 	github.com/shirou/gopsutil v3.21.7+incompatible
 )
 
